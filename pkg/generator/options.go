@@ -32,6 +32,7 @@ type Options struct {
 	csv          CsvOpts
 	random       RandomOpts
 	randomPrefix int
+	prefixDepth  int
 }
 
 // OptionApplier allows to abstract generator options.
@@ -96,12 +97,23 @@ func WithCustomPrefix(prefix string) Option {
 func WithPrefixSize(n int) Option {
 	return func(o *Options) error {
 		if n < 0 {
-			return errors.New("WithPrefixSize: size must be >= 0 and <= 16")
+			return errors.New("WithPrefixSize: size must be >= 0 and <= 128")
 		}
-		if n > 16 {
-			return errors.New("WithPrefixSize: size must be >= 0 and <= 16")
+		if n > 128 {
+			return errors.New("WithPrefixSize: size must be >= 0 and <= 128")
 		}
 		o.randomPrefix = n
+		return nil
+	}
+}
+
+// WithPrefixDepth sets prefix depth.
+func WithPrefixDepth(n int) Option {
+	return func(o *Options) error {
+		if n < 0 {
+			return nil
+		}
+		o.prefixDepth = n
 		return nil
 	}
 }
