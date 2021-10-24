@@ -23,6 +23,7 @@ import (
 	"math"
 	"math/rand"
 	"path"
+	"path/filepath"
 	"runtime"
 )
 
@@ -98,10 +99,15 @@ func (o *Object) setPrefix(opts Options) {
 		o.Prefix = opts.customPrefix
 		return
 	}
-	b := make([]byte, opts.randomPrefix)
-	rng := rand.New(rand.NewSource(int64(rand.Uint64())))
-	randASCIIBytes(b, rng)
-	o.Prefix = path.Join(opts.customPrefix, string(b))
+
+	if opts.prefixDepth > 1 {
+		o.Prefix = randomPath(opts.prefixDepth, opts.customPrefix)
+	} else {
+		b := make([]byte, opts.randomPrefix)
+		rng := rand.New(rand.NewSource(int64(rand.Uint64())))
+		randASCIIBytes(b, rng)
+		o.Prefix = path.Join(opts.customPrefix, string(b))
+	}
 }
 
 func (o *Object) setName(s string) {
@@ -193,4 +199,22 @@ func GetExpRandSize(rng *rand.Rand, max int64) int64 {
 	}
 	// For lowest part, do linear
 	return 1 + int64(random*math.Pow(2, logSizeMin+1))
+}
+
+func randomPath(pathDepth int, customPrefix string) string {
+	var parts []string
+
+	if customPrefix != "" {
+		parts = append(parts, customPrefix)
+		pathDepth -= 1
+	}
+
+	part := make([]byte, 4)
+	for i := 1; i <= pathDepth; i++ {
+		rng := rand.New(rand.NewSource(int64(rand.Uint64())))
+		randASCIIBytes(part, rng)
+		parts = append(parts, string(part))
+	}
+
+	return filepath.Join(parts...)
 }

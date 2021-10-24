@@ -62,6 +62,9 @@ func newGenSourceCSV(ctx *cli.Context) func() generator.Source {
 // newGenSource returns a new generator
 func newGenSource(ctx *cli.Context, sizeField string) func() generator.Source {
 	prefixSize := 8
+	if ctx.IsSet("prefix-depth") && ctx.Int("prefix-depth") > 1 {
+		prefixSize = ctx.Int("prefix-depth")*4 + ctx.Int("prefix-depth") - 1 // 4 chars for every depth level + the '/'
+	}
 	if ctx.Bool("noprefix") {
 		prefixSize = 0
 	}
@@ -84,6 +87,7 @@ func newGenSource(ctx *cli.Context, sizeField string) func() generator.Source {
 		generator.WithPrefixSize(prefixSize),
 		generator.WithSize(int64(size)),
 		generator.WithRandomSize(ctx.Bool("obj.randsize")),
+		generator.WithPrefixDepth(ifThenElse(ctx.IsSet("prefix-depth"), ctx.Int("prefix-depth"), -1)),
 	)
 	fatalIf(probe.NewError(err), "Unable to create data generator")
 	return src
@@ -92,4 +96,12 @@ func newGenSource(ctx *cli.Context, sizeField string) func() generator.Source {
 // toSize converts a size indication to bytes.
 func toSize(size string) (uint64, error) {
 	return humanize.ParseBytes(size)
+}
+
+// IfThenElse evaluates a condition, if true returns the first parameter otherwise the second
+func ifThenElse(condition bool, a int, b int) int {
+	if condition {
+		return a
+	}
+	return b
 }

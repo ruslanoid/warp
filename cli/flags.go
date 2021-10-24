@@ -199,6 +199,11 @@ var ioFlags = []cli.Flag{
 		Name:  "prefix",
 		Usage: "Use a custom prefix for each thread",
 	},
+	cli.IntFlag{
+		Name:  "prefix-depth",
+		Value: 6,
+		Usage: "Build prefix with a given depth of \"folders\" separated by '/'",
+	},
 	cli.BoolFlag{
 		Name:  "disable-multipart",
 		Usage: "disable multipart uploads",
